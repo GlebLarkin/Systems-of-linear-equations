@@ -26,7 +26,7 @@ int main()
 
 
     // Создаем трехдиагональную матрицу
-    Tridiagonal_matrix<double> matrix(upper, main, lower, matrix_size);
+    Tridiagonal_matrix<double> matrix(upper_diag, main_diag, lower_diag, matrix_size);
 
 
     // Вектор свободных членов (должен иметь размер = matrix_size)
