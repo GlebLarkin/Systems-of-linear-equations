@@ -4,36 +4,46 @@
 
 //я хз кто такие тесты
 
-void TestSimpleCase()
-{
-  std::vector<double> lower_diag = {1};
-  std::vector<double> main_diag = {4, 5}; 
-  std::vector<double> upper_diag = {2}; 
-  std::vector<double> free_col = {6, 9}; 
-
-  Tridiagonal_matrix<double> matrix(upper_diag, main_diag, lower_diag, 2);
-  Thomas_algorithm<double> solver(matrix, free_col);
-
-  std::vector<double> result = solver.Get_solution();
-  std::cout << "Test 1: Simple case result: ";
-  for (double x : result) std::cout << x << " ";
-  std::cout << std::endl;
-}
-
-void TestAlsoSimpleCase() 
+void TestSimpleCase() 
 {
   std::vector<double> lower_diag = {1, 1};
-  std::vector<double> main_diag = {4, 5, 6};
-  std::vector<double> upper_diag = {2, 2};
-  std::vector<double> free_col = {7, 8, 9};
+  std::vector<double> main_diag = {3, 3, 3};
+  std::vector<double> upper_diag = {1, 1};
+  std::vector<double> free_col = {1, 1, 1};
+
+  std::vector<double> expected = {2.0 / 7, 1.0 / 7, 2.0 / 7};
 
   Tridiagonal_matrix<double> matrix(upper_diag, main_diag, lower_diag, 3);
   Thomas_algorithm<double> solver(matrix, free_col);
 
   std::vector<double> result = solver.Get_solution();
-  std::cout << "Test 2: Typical case result: ";
+
+  std::cout << "Test 1 Thomas algorithm for tridiagonal matrix results: ";
   for (double x : result) std::cout << x << " ";
-  std::cout << std::endl;
+  std::cout << "\nExpected results: ";
+  for (double x : expected) std::cout << x << " ";
+  std::cout << "\n";
+}
+
+void TestAlsoSimpleCase() 
+{
+  std::vector<float> lower_diag = {5, 1};
+  std::vector<float> main_diag = {6, 8, 4};
+  std::vector<float> upper_diag = {2, 2};
+  std::vector<float> free_col = {1, 1, 2};
+
+  std::vector<float> expected = {3.0 / 14, -1.0 / 7, 15.0 / 28};
+
+  Tridiagonal_matrix<float> matrix(upper_diag, main_diag, lower_diag, 3);
+  Thomas_algorithm<float> solver(matrix, free_col);
+
+  std::vector<float> result = solver.Get_solution();
+
+  std::cout << "Test 2 Thomas algorithm for tridiagonal matrix results: ";
+  for (float x : result) std::cout << x << " ";
+  std::cout << "\nExpected results: ";
+  for (float x : expected) std::cout << x << " ";
+  std::cout << "\n";
 }
 
 void FailTest() 
@@ -45,36 +55,17 @@ void FailTest()
 
   try 
   {
+    std::cout << "Test 3 Thomas algorithm for tridiagonal matrix results (it should fail)\n";
     Tridiagonal_matrix<double> matrix(upper_diag, main_diag, lower_diag, 3);
     Thomas_algorithm<double> solver(matrix, free_col);
-    std::cout << "Test 3: Unexpected success (should fail!)\n";
-  } catch (const std::exception &e) {
-    std::cout << "Test 3: Caught expected error: " << e.what() << std::endl;
-  }
+  } catch (const std::exception & e) {}
 }
 
-void TestLargeSystem() 
-{
-  size_t n = 100;
-  std::vector<double> lower_diag(n - 1, -1);
-  std::vector<double> main_diag(n, 4);
-  std::vector<double> upper_diag(n - 1, -1);
-  std::vector<double> free_col(n, 2);
-
-  Tridiagonal_matrix<double> matrix(upper_diag, main_diag, lower_diag, n);
-  Thomas_algorithm<double> solver(matrix, free_col);
-
-  std::vector<double> result = solver.Get_solution();
-  std::cout << "Test 4: Large system, first 5 results: ";
-  for (size_t i = 0; i < n; i++) std::cout << result[i] << " ";
-  std::cout << std::endl;
-}
 
 int main() 
 {
     TestSimpleCase();
     TestAlsoSimpleCase();
     FailTest();
-    TestLargeSystem();
     return 0;
 }

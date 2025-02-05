@@ -34,14 +34,13 @@ private:
       T sum = std::abs(upper_diag_[i]) + std::abs(lower_diag_[i]);
       if (std::abs(main_diag_[i]) <= sum)
       {
-        std::cerr << "The condition of strictly diagonal predominance is not fulfilled, the algorithm is unstable\n";
+        std::cerr << "!!!\nThe condition of strictly diagonal predominance is not fulfilled, the algorithm is unstable\n!!!\n";
       }
     }
   }
 
   void Solve()
   {
-    //прямой ход
     size_t size = matrix_.Get_matrix_size().first;
     std::vector<T> p_arr(size);
     std::vector<T> q_arr(size);
@@ -55,7 +54,6 @@ private:
       q_arr[i] = (free_col_[i] - lower_diag_[i] * q_arr[i - 1]) / (main_diag_[i] + lower_diag_[i] * p_arr[i - 1]);
     }
 
-    //обратный ход
     std::vector<T> solution(size);
 
     solution[size - 1] = q_arr[size - 1];
