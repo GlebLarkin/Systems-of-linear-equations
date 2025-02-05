@@ -18,6 +18,12 @@ int main()
     std::vector<double> main_diag = {5, 8, -10, 1};  // Главная диагональ (N элементов)
     std::vector<double> upper_diag = {1, 2, 6};      // Верхняя диагональ (N-1 элементов)
 
+    // Тогда получим:
+    // { 5   1   0   0 }
+    // { 3   8   2   0 }
+    // { 0   2  -10  6 }
+    // { 0   0   0   1 }
+
 
     // Создаем трехдиагональную матрицу
     Tridiagonal_matrix<double> matrix(upper, main, lower, matrix_size);
