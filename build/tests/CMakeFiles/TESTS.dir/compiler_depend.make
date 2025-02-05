@@ -202,8 +202,11 @@ tests/CMakeFiles/TESTS.dir/main.cc.o: ../tests/main.cc \
   /usr/include/c++/11/bits/stl_bvector.h \
   /usr/include/c++/11/bits/vector.tcc \
   /usr/include/c++/11/utility \
-  /usr/include/c++/11/bits/stl_relops.h
+  /usr/include/c++/11/bits/stl_relops.h \
+  ../src/vector_operations.h
 
+
+../src/vector_operations.h:
 
 /usr/include/c++/11/bits/stl_relops.h:
 
