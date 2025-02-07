@@ -81,6 +81,7 @@ void TestVectorSubtraction1()
   std::cout << "\n";
 }
 
+
 void TestVectorSubtraction2()
 {
   std::vector<double> vec1 = {10.1, 20.2, 30.3};
@@ -100,10 +101,12 @@ void TestVectorSubtraction2()
 
 int main() 
 {
+  // Tridiagonal matrix tests
     TestSimpleCase();
     TestAlsoSimpleCase();
     FailTest();
 
+  // Vector operations tests
     TestVectorSubtraction1();
     TestVectorSubtraction2();
 
