@@ -1,1 +1,1 @@
-/usr/bin/c++ CMakeFiles/TESTS.dir/main.cc.o -o TESTS 
+/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/TESTS.dir/main.cc.o -o TESTS 

@@ -18,7 +18,7 @@ public:
         Check_if_matrix_correct();
         Solve();
       }
-  
+
   std::vector<T> Get_solution() const { return solution_; }
 
 private:

@@ -34,7 +34,7 @@ public:
       }
     }
 
-    T& operator() (size_t i, size_t j) override //for changing matrix  
+    T& operator() (size_t i, size_t j) //for changing matrix  
     {
       if (i >= main_diag_size_ || j >= main_diag_size_)
       {
@@ -46,12 +46,10 @@ public:
       else
       {
         throw std::runtime_error("Trying to change an element out of the diagonals in the tridiagonal matrix\n");
-        static T dummy;
-        return dummy;
       }
     }
 
-    T operator() (size_t i, size_t j) const //for reading matrix 
+    T operator() (size_t i, size_t j) const override //for reading matrix 
     {
       if (i >= main_diag_size_ || j >= main_diag_size_)
       {
