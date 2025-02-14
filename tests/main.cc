@@ -188,7 +188,7 @@ void CSRMatrixTest()
     {{3, 3}, 4.2}
   };
 
-  CSR_Matrix<double> csr_matrix(dok_matrix);
+  CSR_Matrix<double> csr_matrix(dok_matrix, 5, 4);
 
   std::cout << "=======CSR matrix tests=======\n";
 
@@ -197,6 +197,7 @@ void CSRMatrixTest()
   std::cout << "Element (2, 1): " << csr_matrix(2, 1) << " || should be 3.7\n";
   std::cout << "Element (3, 3): " << csr_matrix(3, 3) << " || should be 4.2\n";
   std::cout << "Element (1, 1): " << csr_matrix(1, 1) << " || should be 0.0\n";
+  std::cout << "Element (4, 4): " << csr_matrix(4, 3) << " || should be 0.0\n";
 
   std::vector<double> vec = {1.0, 1.0, 1.0, 1.0};
   std::vector<double> expected_result = {1.0, 2.5, 3.7, 4.2};
