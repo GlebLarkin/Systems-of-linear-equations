@@ -14,7 +14,7 @@ public:
   CSR_Matrix(const std::map<std::pair<size_t, size_t>, T> & user_matrix, size_t x_size, size_t y_size) 
     : sizes(std::make_pair(x_size, y_size)) 
     {
-      auto init_matrix = user_matrix; // ???
+      auto init_matrix = user_matrix;
 
       auto last_el = init_matrix.find(std::make_pair(x_size - 1, y_size - 1));
       if (last_el == init_matrix.end())
@@ -61,11 +61,8 @@ public:
     return T(0);
   }
 
-  //T& operator() (size_t i, size_t j) = delete; //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! спросить семера
-  // if it is not deleted, user will be able to change 
-  // element with any large indexes 
-  // because we can have matrixes with very 
-  // large number of zero rows and cols in the end
+  //T& operator() (size_t i, size_t j) = delete;
+  // hard realization
 
   std::vector<T> operator* (const std::vector<T> & vec) const
   {

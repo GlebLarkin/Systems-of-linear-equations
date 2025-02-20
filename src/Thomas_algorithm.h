@@ -34,7 +34,8 @@ private:
       T sum = std::abs(upper_diag_[i]) + std::abs(lower_diag_[i]);
       if (std::abs(main_diag_[i]) <= sum)
       {
-        std::cerr << "!!!\nThe condition of strictly diagonal predominance is not fulfilled, the algorithm is unstable\n!!!\n";
+        std::cout << "!!!\nThe condition of strictly diagonal predominance is not fulfilled, the algorithm is unstable\n!!!\n";
+        //std::cerr << "!!!\nThe condition of strictly diagonal predominance is not fulfilled, the algorithm is unstable\n!!!\n";
       }
     }
   }

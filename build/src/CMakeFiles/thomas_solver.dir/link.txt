@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/thomas_solver.dir/main.cc.o -o thomas_solver 

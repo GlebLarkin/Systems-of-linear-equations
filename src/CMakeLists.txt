@@ -1,2 +1,2 @@
-add_library(SRC_LIB INTERFACE)
-target_include_directories(SRC_LIB INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+add_library(${PROJECT_NAME} INTERFACE)
+target_include_directories(${PROJECT_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
