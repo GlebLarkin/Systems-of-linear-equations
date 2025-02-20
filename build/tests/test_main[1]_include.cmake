@@ -1,5 +1,0 @@
-if(EXISTS "/home/gleb/Coding/CppProjects/system-of-linear-eq/build/tests/test_main[1]_tests.cmake")
-  include("/home/gleb/Coding/CppProjects/system-of-linear-eq/build/tests/test_main[1]_tests.cmake")
-else()
-  add_test(test_main_NOT_BUILT test_main_NOT_BUILT)
-endif()
