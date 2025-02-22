@@ -1,1 +1,7 @@
-//на будущее
+#include "Tridiagonal_matrix.h"
+#include "Thomas_algorithm.h"
+#include "CSR_matrix.h"
+#include "Dense_matrix.h"
+#include "vector_operations.h"
+#include "QR_decomposition.h"
+#include "Some_matrix_operations.h"

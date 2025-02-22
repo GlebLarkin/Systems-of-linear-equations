@@ -8,7 +8,9 @@ template <class T>
 class DenseMatrix : public IMatrix<T>
 {
 public:
-  DenseMatrix(size_t rows, size_t cols, const std::vector<std::vector<T>> & init_matrix)
+  DenseMatrix() = default;
+
+  DenseMatrix(const std::vector<std::vector<T>> & init_matrix, size_t rows, size_t cols)
     : nx_(cols), ny_(rows), data_(rows * cols)
   {
     if (init_matrix.size() != rows)
@@ -103,13 +105,94 @@ public:
     }
     return ans;
   }
-  
-  std::pair<size_t, size_t> Get_matrix_size() const override { return std::make_pair(nx_, ny_); }
 
-private:
+  DenseMatrix<T> operator * (T scalar) const
+  {
+    DenseMatrix<T> result(*this);
+
+    for (size_t i = 0; i < ny_; ++i)
+    {
+      for (size_t j = 0; j < nx_; ++j)
+      {
+        result(i, j) = (*this)(i, j) * scalar;
+      }
+    }
+
+  return result;
+  }
+  
+  DenseMatrix<T> Transpond() noexcept
+  {
+    std::vector<std::vector<T>> transposed_data(nx_, std::vector<T>(ny_));
+    
+    for (size_t i = 0; i < ny_; ++i)
+    {
+      for (size_t j = 0; j < nx_; ++j)
+      {
+        transposed_data[j][i] = (*this)(i, j);
+      }
+    }
+
+    return DenseMatrix<T>(transposed_data, nx_, ny_);
+  }
+
+  DenseMatrix<T> & TranspondInPlace()
+  {
+    std::vector<T> transposed_data(nx_ * ny_);
+
+    for (size_t i = 0; i < ny_; ++i)
+    {
+      for (size_t j = 0; j < nx_; ++j)
+      {
+        transposed_data[j * ny_ + i] = data_[i * nx_ + j];
+      }
+    }
+
+    std::swap(nx_, ny_);
+
+    data_ = std::move(transposed_data);
+
+    return *this;
+  }
+
+  std::pair<size_t, size_t> Get_matrix_size() const override { return std::make_pair(ny_, nx_); }
+
+  private:
   size_t nx_; // Number of columns
   size_t ny_; // Number of rows
   std::vector<T> data_;
 };
+
+template<class T>
+class Eye : public IMatrix<T>
+{
+public:
+  Eye(size_t size) : size_(size) {}
+  T operator() (size_t i, size_t j) const override
+  {
+    if (i >= size_ || j >= size_)
+    {
+      throw std::out_of_range("Trying to access an element outside the eye matrix\n");
+    }
+    if (i == j) return T(1);
+    return T(0);
+  }
+
+  T operator() (size_t i, size_t j)
+  {
+    if (i >= size_ || j >= size_)
+    {
+      throw std::out_of_range("Trying to access an element outside the eye matrix\n");
+    }
+    if (i == j) return T(1);
+    return T(0);
+  }
+
+  std::pair<size_t, size_t> Get_matrix_size() const override { return std::make_pair(size_, size_); }
+
+private:
+  const size_t size_;
+};
+
 
 #endif
