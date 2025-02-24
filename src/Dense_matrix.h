@@ -121,7 +121,7 @@ public:
   return result;
   }
   
-  DenseMatrix<T> Transpond() noexcept
+  DenseMatrix<T> Transpond() const noexcept
   {
     std::vector<std::vector<T>> transposed_data(nx_, std::vector<T>(ny_));
     
@@ -156,6 +156,19 @@ public:
   }
 
   std::pair<size_t, size_t> Get_matrix_size() const override { return std::make_pair(ny_, nx_); }
+
+  void Print() const
+  { 
+    for (size_t i = 0; i < ny_; ++i)
+    {
+      for (size_t j = 0; j < nx_; ++j)
+      {
+        std::cout << (*this)(i, j) << " ";
+      }
+      std::cout << "\n";
+    }
+}
+
 
   private:
   size_t nx_; // Number of columns
