@@ -1,9 +1,9 @@
 #ifndef QR_H
 #define QR_H
 
-#include "Dense_matrix.h"
-#include "Some_matrix_operations.h"
-#include "vector_operations.h"
+#include "./Matrixes/Dense_matrix.h"
+#include "./Operations/Some_matrix_operations.h"
+#include "./Operations/vector_operations.h"
 #include <iostream>
 #include <stdexcept>
 

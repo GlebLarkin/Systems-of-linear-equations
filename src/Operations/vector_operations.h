@@ -3,8 +3,8 @@
 
 #include <vector>
 #include <cmath>
-#include "Dense_matrix.h"
-#include "CSR_matrix.h"
+#include "./Matrixes/Dense_matrix.h"
+#include "./Matrixes/CSR_matrix.h"
 
 
 template <class T>

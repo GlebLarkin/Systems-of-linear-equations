@@ -1,4 +1,4 @@
-#include "Solver.h"
+#include "includes.h"
 
 #include <gtest/gtest.h>
 #include <utility>
@@ -110,6 +110,7 @@ TEST(VectorOperationsTest, TestVectorScalarMultiplication)
     ASSERT_NEAR(result[i], expected[i], 1e-9);
   }
 }
+
 
 //=================Dense matrix tests=================
 TEST(DenseMatrixTest, DenseMatrixTest) 
@@ -239,6 +240,7 @@ TEST(QRTest, SolveSystem) {
       EXPECT_NEAR(Ax[i], b[i], 1e-6);
   }
 }
+
 
 //=================Vector to matrix conversation tests=================
 TEST(Vector2MatrixTest, ConvertsVectorCorrectly)

@@ -1,7 +1,7 @@
 #ifndef THOMASALGORITHM_H
 #define THOMASALGORITHM_H
 
-#include "Tridiagonal_matrix.h"
+#include "./Matrixes/Tridiagonal_matrix.h"
 
 
 template <class T>
