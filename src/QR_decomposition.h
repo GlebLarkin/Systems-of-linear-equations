@@ -32,11 +32,11 @@ public:
     {
       throw std::invalid_argument("Vector b must have the same number of rows as the matrix.");
     }
-
-    std::vector<T> QTb = Q_matrix * b;
-
+  
+    std::vector<T> QTb = Q_matrix.Transpond() * b;
+  
     std::vector<T> x(cols_, 0);
-    for (size_t i = cols_ - 1; i >= 0; --i)
+    for (int i = cols_ - 1; i >= 0; --i)
     {
       T sum = QTb[i];
       for (size_t j = i + 1; j < cols_; ++j)
@@ -45,9 +45,11 @@ public:
       }
       x[i] = sum / R_matrix(i, i);
     }
-
+  
     return x;
   }
+  
+  
 
   DenseMatrix<T> GetQ() const { return Q_matrix; }
   DenseMatrix<T> GetR() const { return R_matrix; }

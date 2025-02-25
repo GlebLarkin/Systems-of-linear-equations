@@ -193,7 +193,52 @@ TEST(CSRMatrixTest, CSRMatrixTest)
 
 
 //=================QR decomposition tests=================
+TEST(QRTest, QRDecomposition) {
+  DenseMatrix<double> matrix({
+      {12, -51, 4},
+      {6, 167, -68},
+      {-4, 24, -41}
+  }, 3, 3);
 
+  QR<double> qr(matrix);
+  DenseMatrix<double> Q = qr.GetQ();
+  DenseMatrix<double> R = qr.GetR();
+
+  DenseMatrix<double> QTQ = Q.Transpond() * Q;
+  for (size_t i = 0; i < QTQ.Get_matrix_size().first; ++i) {
+      for (size_t j = 0; j < QTQ.Get_matrix_size().second; ++j) {
+          if (i == j) {
+              EXPECT_NEAR(QTQ(i, j), 1.0, 1e-6);
+          } else {
+              EXPECT_NEAR(QTQ(i, j), 0.0, 1e-6);
+          }
+      }
+  }
+
+  DenseMatrix<double> QR = Q * R;
+  for (size_t i = 0; i < matrix.Get_matrix_size().first; ++i) {
+      for (size_t j = 0; j < matrix.Get_matrix_size().second; ++j) {
+          EXPECT_NEAR(QR(i, j), matrix(i, j), 1e-6);
+      }
+  }
+}
+
+TEST(QRTest, SolveSystem) {
+  DenseMatrix<double> matrix({
+      {12, -51, 4},
+      {6, 167, -68},
+      {-4, 24, -41}
+  }, 3, 3);
+
+  std::vector<double> b = {1, 0, 0};
+  QR<double> qr(matrix);
+  std::vector<double> x = qr.solve_system(b);
+
+  std::vector<double> Ax = matrix * x;
+  for (size_t i = 0; i < b.size(); ++i) {
+      EXPECT_NEAR(Ax[i], b[i], 1e-6);
+  }
+}
 
 //=================Vector to matrix conversation tests=================
 TEST(Vector2MatrixTest, ConvertsVectorCorrectly)
