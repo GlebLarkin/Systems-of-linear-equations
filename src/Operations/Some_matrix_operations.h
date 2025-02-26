@@ -15,15 +15,15 @@ DenseMatrix<T> Vector2matrix(const std::vector<T> & vec)
   return DenseMatrix<T>(matrix, vec.size(), 1);
 }
 
-template <class MatrixType>
-auto Matrix2vectorRow(const MatrixType & matrix, size_t i) -> std::vector<decltype(matrix(0, 0))> // 400 iq
+template <class T>
+std::vector<T> Matrix2vectorRow(const IMatrix<T> &  matrix, const size_t i)
 {
   auto [rows, cols] = matrix.Get_matrix_size();
   if (i >= rows)
   {
     throw std::out_of_range("Index of row is out of range");
   }
-  std::vector<decltype(matrix(0, 0))> vec(cols);
+  std::vector<T> vec(cols);
   for (size_t j = 0; j < cols; ++j)
   {
     vec[j] = matrix(i, j);
@@ -31,22 +31,21 @@ auto Matrix2vectorRow(const MatrixType & matrix, size_t i) -> std::vector<declty
   return vec;
 }
 
-template <class MatrixType>
-auto Matrix2vectorCol(const MatrixType & matrix, size_t j) -> std::vector<decltype(matrix(0, 0))>
+template <class T>
+std::vector<T> Matrix2vectorCol(const IMatrix<T> & matrix, const size_t j)
 {
   auto [rows, cols] = matrix.Get_matrix_size();
   if (j >= cols)
   {
     throw std::out_of_range("Index of column is out of range");
   }
-  std::vector<decltype(matrix(0, 0))> vec(rows);
+  std::vector<T> vec(rows);
   for (size_t i = 0; i < rows; ++i)
   {
     vec[i] = matrix(i, j);
   }
   return vec;
 }
-
 
 template <class T>
 DenseMatrix<T> operator * (const DenseMatrix<T> & A, const DenseMatrix<T> & B)
