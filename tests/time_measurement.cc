@@ -11,6 +11,8 @@ void MeasureTime(const std::function<T(...)> & func,
                  std::string path_to_save_file = "./data/measurement_results.cvs")
 {
   std::ofstream outputFile(path_to_save_file);
+  
+  T res = 0;
 
   if (outputFile.is_open())
   {
@@ -22,9 +24,10 @@ void MeasureTime(const std::function<T(...)> & func,
 
       auto end = std::chrono::high_resolution_clock::now();
       std::chrono::duration<double> duration = end - start;
+      res += duration;
 
-      outputFile << duration;
     }
+    outputFile << res / number_of_func_cals;
     
     outputFile.close();
   }

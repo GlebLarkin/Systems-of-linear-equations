@@ -257,6 +257,95 @@ TEST(Vector2MatrixTest, ConvertsVectorCorrectly)
 }
 
 
+//=================Iterative methods tests=================
+TEST(IterativeMethodsSolverTest, JacobiMethod)
+{
+  std::map<std::pair<size_t, size_t>, double> dok_matrix =
+  {
+    {{0, 0}, 3.0},
+    {{0, 1}, 1.0},
+    {{0, 2}, 1.0},
+    {{1, 0}, 1.0},
+    {{1, 1}, 3.0},
+    {{1, 2}, 1.0},
+    {{2, 0}, 1.0},
+    {{2, 1}, 1.0},
+    {{2, 2}, 3.0}
+  };
+  CSR_Matrix<double> A(dok_matrix, 3, 3);
+
+  std::vector<double> test_b = {5, 5, 5};
+  std::vector<double> expected_solution = {1, 1, 1};
+
+  IterativeMethodsSolver<double> solver(A, test_b);
+
+  std::vector<double> result = solver.Jacoby_method();
+
+  for (size_t i = 0; i < result.size(); ++i)
+  {
+    EXPECT_NEAR(result[i], expected_solution[i], 1e-5);
+  }
+}
+
+TEST(IterativeMethodsSolverTest, GaussSeidelMethod)
+{
+  std::map<std::pair<size_t, size_t>, double> dok_matrix =
+  {
+    {{0, 0}, 4.0},
+    {{0, 1}, 1.0},
+    {{0, 2}, 2.0},
+    {{1, 0}, 1.0},
+    {{1, 1}, 3.0},
+    {{1, 2}, 1.0},
+    {{2, 0}, 1.0},
+    {{2, 1}, 1.0},
+    {{2, 2}, 6.0}
+  };
+  CSR_Matrix<double> A(dok_matrix, 3, 3);
+
+  std::vector<double> test_b = {7, 5, 8};
+  std::vector<double> expected_solution = {1, 1, 1};
+
+  IterativeMethodsSolver<double> solver(A, test_b);
+
+  std::vector<double> result = solver.Gauss_Seidel_method();
+
+  for (size_t i = 0; i < result.size(); ++i)
+  {
+    EXPECT_NEAR(result[i], expected_solution[i], 1e-5);
+  }
+}
+
+TEST(IterativeMethodsSolverTest, SimpleIterationMethod)
+{
+  std::map<std::pair<size_t, size_t>, double> dok_matrix =
+  {
+    {{0, 0}, 3.0},
+    {{0, 1}, 1.0},
+    {{0, 2}, 1.0},
+    {{1, 0}, 1.0},
+    {{1, 1}, 3.0},
+    {{1, 2}, 1.0},
+    {{2, 0}, 1.0},
+    {{2, 1}, 1.0},
+    {{2, 2}, 3.0}
+  };
+  CSR_Matrix<double> A(dok_matrix, 3, 3);
+
+  std::vector<double> test_b = {5, 5, 5};
+  std::vector<double> expected_solution = {1, 1, 1};
+
+  IterativeMethodsSolver<double> solver(A, test_b);
+
+  std::vector<double> result = solver.Simple_iteration_method(0.1);
+
+  for (size_t i = 0; i < result.size(); ++i)
+  {
+    EXPECT_NEAR(result[i], expected_solution[i], 1e-5);
+  }
+}
+
+
 
 int main(int argc, char **argv) 
 {
