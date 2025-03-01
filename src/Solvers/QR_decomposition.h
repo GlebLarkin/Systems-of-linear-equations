@@ -49,7 +49,6 @@ public:
     return x;
   }
   
-  
 
   DenseMatrix<T> GetQ() const { return Q_matrix; }
   DenseMatrix<T> GetR() const { return R_matrix; }
