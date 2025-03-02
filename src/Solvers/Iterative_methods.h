@@ -93,7 +93,7 @@ public:
     return x_;
   }
   
-  std::vector<T> Simple_iteration_method(T tau = 1)
+  std::vector<T> Simple_iteration_method(T tau = 0.001)
   {
     size_t iteration = 0;
 
