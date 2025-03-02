@@ -105,6 +105,8 @@ public:
 
     return x_;
   }
+
+  void ResetSolution() { x_.assign(b_.size(), 0); }
   
 private:
   bool check_discrepancy() { return VectorNorm(A_ * x_ - b_) < stop_discrepancy_; }
