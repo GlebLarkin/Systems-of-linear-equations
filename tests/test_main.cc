@@ -394,9 +394,53 @@ TEST(EstimateMaxEigenvalueTest, Symmetric3x3) {
 }
 
 
-
+/*
 int main(int argc, char **argv) 
 {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
+}
+*/
+
+#include <fstream>
+
+int main()
+{
+  std::map<std::pair<size_t, size_t>, double> dok_matrix =
+  {
+    {{0, 0}, 3.0},
+    {{0, 1}, 1.0},
+    {{0, 2}, 1.0},
+    {{1, 0}, 1.0},
+    {{1, 1}, 3.0},
+    {{1, 2}, 1.0},
+    {{2, 0}, 1.0},
+    {{2, 1}, 1.0},
+    {{2, 2}, 3.0}
+  };
+  CSR_Matrix<double> A(dok_matrix, 3, 3);
+
+  std::vector<double> test_b = {5, 5, 5};
+  std::vector<double> expected_solution = {1, 1, 1};
+
+  IterativeMethodsSolver<double> solver(A, test_b);
+
+  std::vector<double> result = solver.Chebyshev_simple_iteration_method(2, 5, 1);
+
+
+  std::ofstream file("/home/gleb/Coding/CppProjects/system-of-linear-eq/data/chebyshev_results_worst.txt");
+  if (!file.is_open())
+  {
+    throw std::runtime_error("Failed to open file: chebyshev_results_worst.txt");
+  }
+
+  file << "Chebyshev Simple Iteration Method worst\n";
+  for (size_t i = 0; i < solver.Chebyshev_iteration.size(); ++i)
+  {
+    file << solver.Chebyshev_iteration[i] << " " << solver.Chebyshev_discrepancy[i] << "\n";
+  }
+
+  file.close();
+
+  return 0;
 }

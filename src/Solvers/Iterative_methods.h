@@ -18,6 +18,9 @@ template <class T>
 class IterativeMethodsSolver
 {
 public:
+std::vector<size_t> Chebyshev_iteration;
+std::vector<T> Chebyshev_discrepancy;
+
   IterativeMethodsSolver(const CSR_Matrix<T> & A,  
                          const std::vector<T> & b, 
                          const T stop_discrepancy = std::numeric_limits<T>::epsilon() * 1e3) 
@@ -134,6 +137,10 @@ public:
     while(!check_discrepancy() && iteration < max_iterations_ && iteration < number_of_iterations)
     {
       x_ = x_ - (A_ * x_ - b_) * true_tau_arr[iteration];
+
+      Chebyshev_iteration.emplace_back(iteration);
+      Chebyshev_discrepancy.emplace_back(std::abs(VectorNorm(A_ * x_ - b_)));
+
       ++iteration;
     }
 
