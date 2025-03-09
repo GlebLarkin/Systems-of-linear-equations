@@ -345,6 +345,54 @@ TEST(IterativeMethodsSolverTest, SimpleIterationMethod)
   }
 }
 
+TEST(IterativeMethodsSolverTest, ChebyshevSimpleIterationMethod)
+{
+  std::map<std::pair<size_t, size_t>, double> dok_matrix =
+  {
+    {{0, 0}, 3.0},
+    {{0, 1}, 1.0},
+    {{0, 2}, 1.0},
+    {{1, 0}, 1.0},
+    {{1, 1}, 3.0},
+    {{1, 2}, 1.0},
+    {{2, 0}, 1.0},
+    {{2, 1}, 1.0},
+    {{2, 2}, 3.0}
+  };
+  CSR_Matrix<double> A(dok_matrix, 3, 3);
+
+  std::vector<double> test_b = {5, 5, 5};
+  std::vector<double> expected_solution = {1, 1, 1};
+
+  IterativeMethodsSolver<double> solver(A, test_b);
+
+  std::vector<double> result = solver.Chebyshev_simple_iteration_method(2, 5);
+
+  for (size_t i = 0; i < result.size(); ++i)
+  {
+    EXPECT_NEAR(result[i], expected_solution[i], 1e-5);
+  }
+}
+
+
+//=================Eigenvalues tests=================
+TEST(EstimateMaxEigenvalueTest, Symmetric3x3) {
+  std::map<std::pair<size_t, size_t>, double> dok_matrix = {
+      {{0, 0}, 3.0},
+      {{0, 1}, 1.0},
+      {{0, 2}, 1.0},
+      {{1, 0}, 1.0},
+      {{1, 1}, 3.0},
+      {{1, 2}, 1.0},
+      {{2, 0}, 1.0},
+      {{2, 1}, 1.0},
+      {{2, 2}, 3.0}
+  };
+  CSR_Matrix<double> A(dok_matrix, 3, 3);
+  double lambda = Estimate_max_eigenvalue(A);
+  EXPECT_NEAR(lambda, 5.0, 1e-5);
+}
+
 
 
 int main(int argc, char **argv) 

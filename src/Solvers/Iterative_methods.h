@@ -10,8 +10,11 @@
 #include <limits>
 #include <stdexcept>
 #include <iostream>
+#include <cmath>
+#include <numbers>
 
-template<class T>
+
+template <class T>
 class IterativeMethodsSolver
 {
 public:
@@ -62,7 +65,7 @@ public:
       x_ = D_min1 * (b_ - (A_ * x_ - D_diag * x_)); 
       ++iteration;
     }
-
+    if (iteration >= max_iterations_) std::cout << "Iteration number limit had been reached, but the discrepancy is too big. Maybe the method is unstable.";
     return x_;
   }
 
@@ -89,7 +92,7 @@ public:
       }
       ++iteration;
     }
-  
+    if (iteration >= max_iterations_) std::cout << "Iteration number limit had been reached, but the discrepancy is too big. Maybe the method is unstable.";
     return x_;
   }
   
@@ -102,19 +105,113 @@ public:
       x_ = x_ - (A_ * x_ - b_) * tau;
       ++iteration;
     }
+    if (iteration >= max_iterations_) std::cout << "Iteration number limit had been reached, but the discrepancy is too big. Maybe the method is unstable.\n";
 
     return x_;
   }
 
-  void ResetSolution() { x_.assign(b_.size(), 0); }
-  
+  std::vector<T> Chebyshev_simple_iteration_method(T lambda_min, T lambda_max, size_t number_of_iterations = 32) 
+  // can be sped up by pre-computing the tau vector without recursion
+  {
+    if (number_of_iterations == 0) throw std::invalid_argument("Holy moly zero number of iterations is no good");
+    auto findExponent = [](T x) -> size_t 
+    {
+      size_t n = 0;
+      T power = 1;
+      while (power < x) 
+      {
+        ++n;
+        power *= 2;
+      }
+      return n;
+    };
+    number_of_iterations = static_cast<size_t>(pow(2, findExponent(number_of_iterations)));
+    
+    if (number_of_iterations > max_iterations_) number_of_iterations = max_iterations_;
+    auto true_tau_arr = create_true_tau_arr(lambda_min, lambda_max, number_of_iterations);
+
+    size_t iteration = 0;
+    while(!check_discrepancy() && iteration < max_iterations_ && iteration < number_of_iterations)
+    {
+      x_ = x_ - (A_ * x_ - b_) * true_tau_arr[iteration];
+      ++iteration;
+    }
+
+    if (iteration >= max_iterations_) std::cout << "Iteration number limit had been reached, but the discrepancy is too big. Maybe the method is unstable.";
+    if (iteration >= number_of_iterations) return Chebyshev_simple_iteration_method(lambda_min, lambda_max, number_of_iterations * 2);
+    return x_;
+  }
+
+  void ResetSolution() { x_.assign(x_.size(), 0); }
+
 private:
-  bool check_discrepancy() { return VectorNorm(A_ * x_ - b_) < stop_discrepancy_; }
+  bool check_discrepancy() { return VectorNorm(A_ * x_ - b_) < stop_discrepancy_; } const
+
+  // creats the correct order of tau for Chebyshev_simple_iteration_method
+  inline std::vector<size_t> get_tau_order(size_t number_of_iterations, std::vector<size_t> init_tau_arr = std::vector<size_t>{0}) const // я могу как то передавать по ссылке init_tau_arr?
+  {
+    size_t current_tau_size = init_tau_arr.size();
+
+    if (current_tau_size == number_of_iterations) return init_tau_arr;
+
+    std::vector<size_t> tau_arr;
+    tau_arr.reserve(2 * current_tau_size);
+
+    for (size_t i = 0; i < current_tau_size; ++i)
+    {
+      tau_arr.emplace_back(init_tau_arr[i]);
+      tau_arr.emplace_back(2 * current_tau_size - 1 - init_tau_arr[i]);
+    }
+
+    return get_tau_order(number_of_iterations, tau_arr);
+  }
+
+  inline std::vector<T> find_Chebyshev_coefs(size_t number_of_iterations) const
+  {
+    T cos_1 = std::cos(std::numbers::pi_v<T> / number_of_iterations);
+    T sin_1 = std::sin(std::numbers::pi_v<T> / number_of_iterations);
+    T t_0 = std::cos(std::numbers::pi_v<T> / (2 * number_of_iterations));
+
+    std::vector<T> ans;
+    ans.reserve(number_of_iterations);
+
+    ans.emplace_back(t_0);
+    for (size_t i = 0; i < number_of_iterations - 1; ++i) // previous indexes of ans
+    {
+      T value = std::sqrt(std::max(T(0), 1 - ans[i] * ans[i])) * sin_1;
+      ans.emplace_back(ans[i] * cos_1 - value);
+    }
+
+    return ans;
+  }
+  
+  inline std::vector<T> create_true_tau_arr(T lambda_min, T lambda_max, size_t number_of_iterations) const
+  {
+    auto init_tau_arr = find_Chebyshev_coefs(number_of_iterations);
+    for (size_t i = 0; i < number_of_iterations; ++i)
+    {
+      init_tau_arr[i] = 0.5 * (lambda_min + lambda_max) + 0.5 * (lambda_max - lambda_min) * init_tau_arr[i];
+    }
+  
+    std::vector<size_t> tau_order = get_tau_order(number_of_iterations);
+  
+    std::vector<T> true_tau_arr;
+    true_tau_arr.reserve(number_of_iterations);
+    
+    for (size_t it : tau_order)
+    {
+      true_tau_arr.emplace_back(1.0 / init_tau_arr[it]);
+    }
+    
+    return true_tau_arr;
+  }
+  
+
 
   const CSR_Matrix<T> A_;
   const std::vector<T> b_;
   const T stop_discrepancy_;  // when ( |Ax - b| < stop_discrepancy_ ) we stop computation
-  size_t max_iterations_ = 10000;
+  size_t max_iterations_ = 1000000;
 
   std::vector<T> x_;  // answer
 

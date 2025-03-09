@@ -1,7 +1,12 @@
 #ifndef MATRIX_OP
 #define MATRIX_OP
 
+#include <limits>
+#include <cmath>
+#include <iostream>
 #include "./Matrixes/Dense_matrix.h"
+#include "./Matrixes/CSR_matrix.h"
+#include "./Operations/vector_operations.h"
 
 
 template <class T>
@@ -227,6 +232,37 @@ DenseMatrix<T> operator - (const Eye<T> & lhs, const DenseMatrix<T> & rhs)
   }
 
   return DenseMatrix<T>(result, rows, cols);
+}
+
+
+template <class T>
+T Estimate_max_eigenvalue(CSR_Matrix<T> & matrix)
+{
+  std::vector<T> x = std::vector<T>(matrix.Get_matrix_size().second, 1);
+  x = x * (1 / VectorNorm(x));
+
+  const size_t max_iteration_number = 10000;
+  const T tol = std::numeric_limits<T>::epsilon() * 1e3;
+  T lambda = 0;
+  T lambda_new = 0;
+
+  for (size_t iteration = 0; iteration < max_iteration_number; ++iteration)
+  {
+    auto y = matrix * x;
+    y = y * (1 / VectorNorm(y));
+
+    auto y_matrix = Vector2matrix(y);
+    lambda_new = (y_matrix.Transpond() * Vector2matrix(matrix * y))(0, 0) / (y_matrix.Transpond() * y_matrix)(0, 0);
+
+    if (std::abs(lambda_new - lambda) < tol)
+      return lambda_new;
+
+    lambda = lambda_new;
+    x = y;
+  }
+
+  std::cout << "Iteration number limit had been reached, but the discrepancy is too big. Try to compute eigenvalues yourself.\n";
+  return lambda_new;
 }
 
 
