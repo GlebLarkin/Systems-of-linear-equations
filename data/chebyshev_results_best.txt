@@ -18,3 +18,5 @@ Chebyshev Simple Iteration Method best
 17 1.06712e-12
 18 3.68184e-13
 19 1.93835e-13
+19 1.93835e-13
+19 1.93835e-13
