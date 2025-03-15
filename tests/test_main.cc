@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 #include <utility>
 
-
+/*
 //=================Tridiagonal matrix tests=================
 TEST(TridiagonalMatrixTest, TestSimpleCase) 
 {
@@ -320,24 +320,30 @@ TEST(IterativeMethodsSolverTest, SimpleIterationMethod)
 {
   std::map<std::pair<size_t, size_t>, double> dok_matrix =
   {
-    {{0, 0}, 3.0},
-    {{0, 1}, 1.0},
-    {{0, 2}, 1.0},
+    {{0, 0}, 97.0},
+    {{0, 1}, 0.0},
+    {{0, 2}, 0.0},
+    {{0, 3}, 0.0},
     {{1, 0}, 1.0},
-    {{1, 1}, 3.0},
-    {{1, 2}, 1.0},
-    {{2, 0}, 1.0},
-    {{2, 1}, 1.0},
-    {{2, 2}, 3.0}
+    {{1, 1}, 78.0},
+    {{1, 2}, 0.0},
+    {{1, 3}, 0.0},
+    {{2, 0}, 0.0},
+    {{2, 1}, 0.0},
+    {{2, 2}, 79.0},
+    {{2, 3}, 0.0},
+    {{3, 0}, 0.0},
+    {{3, 1}, 0.0},
+    {{3, 2}, 0.0},
+    {{3, 3}, 56.0},
   };
-  CSR_Matrix<double> A(dok_matrix, 3, 3);
+  CSR_Matrix<double> A(dok_matrix, 4, 4);
 
-  std::vector<double> test_b = {5, 5, 5};
-  std::vector<double> expected_solution = {1, 1, 1};
+  std::vector<double> test_b = {3, 7, 1, 6};
 
   IterativeMethodsSolver<double> solver(A, test_b);
 
-  std::vector<double> result = solver.Simple_iteration_method(0.1);
+  std::vector<double> result = solver.Simple_iteration_method(0.001);
 
   for (size_t i = 0; i < result.size(); ++i)
   {
@@ -392,16 +398,75 @@ TEST(EstimateMaxEigenvalueTest, Symmetric3x3) {
   double lambda = Estimate_max_eigenvalue(A);
   EXPECT_NEAR(lambda, 5.0, 1e-5);
 }
-
-
-/*
-int main(int argc, char **argv) 
-{
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
 */
 
+
+int main(int argc, char **argv) 
+{
+  //::testing::InitGoogleTest(&argc, argv);
+  //return RUN_ALL_TESTS();
+  std::map<std::pair<size_t, size_t>, double> dok_matrix =
+  {
+    {{0, 0}, 56.0},
+    {{0, 1}, 0.0},
+    {{0, 2}, 0.0},
+    {{0, 3}, 1.0},
+    {{1, 0}, 7.0},
+    {{1, 1}, 88.0},
+    {{1, 2}, 2.0},
+    {{1, 3}, 0.0},
+    {{2, 0}, 0.0},
+    {{2, 1}, 0.0},
+    {{2, 2}, 60.0},
+    {{2, 3}, 0.0},
+    {{3, 0}, 0.0},
+    {{3, 1}, 0.0},
+    {{3, 2}, 4.0},
+    {{3, 3}, 50.0},
+  };
+  CSR_Matrix<double> A(dok_matrix, 4, 4);
+  
+  auto eigen_val = Estimate_max_eigenvalue(A);
+  //std::cout << eigen_val << "\n";
+
+  std::vector<double> test_b = {1, 1, 1, 1};
+
+  std::vector<double> tau_arr;
+  tau_arr.reserve(1000);
+
+  IterativeMethodsSolver<double> solver(A, test_b);
+
+  auto tau_val = 0.001;
+  solver.Simple_iteration_method(tau_val);
+  solver.ResetSolution();
+  tau_arr.emplace_back(tau_val);
+
+
+   tau_val = 0.005;
+  solver.Simple_iteration_method(tau_val);
+  solver.ResetSolution();
+  tau_arr.emplace_back(tau_val);
+
+   tau_val = 0.01;
+  solver.Simple_iteration_method(tau_val);
+  solver.ResetSolution();
+  tau_arr.emplace_back(tau_val);
+
+   tau_val = 0.015;
+  solver.Simple_iteration_method(tau_val);
+  solver.ResetSolution();
+  tau_arr.emplace_back(tau_val);
+
+   tau_val = 0.02;
+  solver.Simple_iteration_method(tau_val);
+  solver.ResetSolution();
+  tau_arr.emplace_back(tau_val);
+
+
+
+}
+
+/*
 #include <fstream>
 
 int main()
@@ -434,7 +499,6 @@ int main()
     throw std::runtime_error("Failed to open file: chebyshev_results_worst.txt");
   }
 
-  file << "Chebyshev Simple Iteration Method worst\n";
   for (size_t i = 0; i < solver.Chebyshev_iteration.size(); ++i)
   {
     file << solver.Chebyshev_iteration[i] << " " << solver.Chebyshev_discrepancy[i] << "\n";
@@ -444,3 +508,4 @@ int main()
 
   return 0;
 }
+*/

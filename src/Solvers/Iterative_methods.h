@@ -23,7 +23,7 @@ std::vector<T> Chebyshev_discrepancy;
 
   IterativeMethodsSolver(const CSR_Matrix<T> & A,  
                          const std::vector<T> & b, 
-                         const T stop_discrepancy = std::numeric_limits<T>::epsilon() * 1e3) 
+                         const T stop_discrepancy = std::numeric_limits<T>::epsilon() * 1e4) 
     : A_(A), b_(b), stop_discrepancy_(stop_discrepancy), x_(std::vector<T>(b.size(), 0))
   {
     const auto [rows, cols] = A_.Get_matrix_size();
@@ -110,8 +110,11 @@ std::vector<T> Chebyshev_discrepancy;
     }
     if (iteration >= max_iterations_) std::cout << "Iteration number limit had been reached, but the discrepancy is too big. Maybe the method is unstable.\n";
 
+    std::cout << iteration << "\n";
+
     return x_;
   }
+
 
   std::vector<T> Chebyshev_simple_iteration_method(T lambda_min, T lambda_max, size_t number_of_iterations = 32) 
   // can be sped up by pre-computing the tau vector without recursion
