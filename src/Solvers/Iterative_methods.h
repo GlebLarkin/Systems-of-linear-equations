@@ -23,7 +23,7 @@ std::vector<T> Chebyshev_discrepancy;
 
   IterativeMethodsSolver(const CSR_Matrix<T> & A,  
                          const std::vector<T> & b, 
-                         const T stop_discrepancy = std::numeric_limits<T>::epsilon() * 1e4) 
+                         const T stop_discrepancy = std::numeric_limits<T>::epsilon() * 1e3) 
     : A_(A), b_(b), stop_discrepancy_(stop_discrepancy), x_(std::vector<T>(b.size(), 0))
   {
     const auto [rows, cols] = A_.Get_matrix_size();
@@ -110,11 +110,8 @@ std::vector<T> Chebyshev_discrepancy;
     }
     if (iteration >= max_iterations_) std::cout << "Iteration number limit had been reached, but the discrepancy is too big. Maybe the method is unstable.\n";
 
-    std::cout << iteration << "\n";
-
     return x_;
   }
-
 
   std::vector<T> Chebyshev_simple_iteration_method(T lambda_min, T lambda_max, size_t number_of_iterations = 32) 
   // can be sped up by pre-computing the tau vector without recursion
@@ -152,10 +149,157 @@ std::vector<T> Chebyshev_discrepancy;
     return x_;
   }
 
+  std::vector<T> Steepest_gradient_descent_method()
+  {
+    size_t iteration = 0;
+    std::vector<T> r(b_.size(), 0);
+    T tau;
+
+    while (!check_discrepancy() && iteration < max_iterations_) 
+    {
+      r =  A_ * x_ - b_;
+      tau = (VectorNorm(r)) / (r * (A_ * r));
+      x_ = x_ - r * tau;
+      ++iteration;
+    }
+    if (iteration >= max_iterations_) std::cout << "Iteration number limit had been reached, but the discrepancy is too big. Maybe the method is unstable.\n";
+
+    return x_;
+  }
+
+  std::vector<T> Successive_over_relaxation_method()
+  {
+    const auto [rows, cols] = A_.Get_matrix_size();
+    for (size_t i = 0; i < rows; ++i)
+    {
+      if (A_(i, i) == 0)
+      {
+        throw std::invalid_argument("Zero element in init matrix. SOR method can not be used.");
+      }
+    }
+  
+    T w = calculate_w(); 
+  
+    size_t iteration = 0;
+  
+    while (!check_discrepancy() && iteration < max_iterations_)
+    {
+      for (size_t k = 0; k < rows; ++k)
+      {
+        T sum1 = 0, sum2 = 0;
+  
+        for (size_t j = 0; j < k; ++j)
+        {
+          sum1 += A_(k, j) * x_[j];
+        }
+  
+        for (size_t j = k + 1; j < cols; ++j)
+        {
+          sum2 += A_(k, j) * x_[j];
+        }
+  
+        T x_old = x_[k];
+        T x_new = (b_[k] - sum1 - sum2) / A_(k, k);
+  
+        x_[k] = (1 - w) * x_old + w * x_new;
+      }
+  
+      ++iteration;
+    }
+  
+    if (iteration >= max_iterations_)
+    {
+      std::cout << "Iteration number limit had been reached, but the discrepancy is too big. Maybe the method is unstable.";
+    }
+  
+    return x_;
+  }
+  
+  std::vector<T> Symmetric_Gauss_Seidel_method()
+  {
+  const auto [rows, cols] = A_.Get_matrix_size();
+  for (size_t i = 0; i < rows; ++i)
+  {
+    if (A_(i, i) == 0) 
+    {
+      throw std::invalid_argument("Zero element in init matrix. Symmetric Gauss-Seidel method cannot be used.");
+    }
+  }
+
+  size_t iteration = 0;
+
+  while (!check_discrepancy() && iteration < max_iterations_)
+  {
+    for (size_t k = 0; k < rows; ++k)
+    {
+      T sum1 = 0, sum2 = 0;
+
+      for (size_t j = k + 1; j < cols; ++j) { sum1 += A_(k, j) * x_[j]; }
+      for (size_t j = 0; j < k; ++j) { sum2 += A_(k, j) * x_[j]; }
+
+      x_[k] = (b_[k] - sum1 - sum2) / A_(k, k);
+    }
+
+    for (size_t k = rows - 1; k >= 0; --k)
+    {
+      T sum1 = 0, sum2 = 0;
+
+      for (size_t j = k + 1; j < cols; ++j) { sum1 += A_(k, j) * x_[j]; }
+      for (size_t j = 0; j < k; ++j) { sum2 += A_(k, j) * x_[j]; }
+
+      x_[k] = (b_[k] - sum1 - sum2) / A_(k, k);
+    }
+
+    ++iteration;
+  }
+
+  if (iteration >= max_iterations_) 
+  {
+    std::cout << "Iteration number limit had been reached, but the discrepancy is too big. Maybe the method is unstable.";
+  }
+
+  return x_;
+  }
+
+
   void ResetSolution() { x_.assign(x_.size(), 0); }
 
 private:
   bool check_discrepancy() { return VectorNorm(A_ * x_ - b_) < stop_discrepancy_; } const
+
+  // for SOR
+  inline T calculate_w() const
+  {
+    const auto [rows, cols] = A_.Get_matrix_size();
+    
+    std::vector<std::vector<T>> dense_E(rows, std::vector<T>(cols, 0));
+    
+    for (size_t i = 0; i < rows; ++i)
+    {
+      T aii = A_(i, i);
+      if (aii == 0)
+      {
+        throw std::invalid_argument("Zero diagonal element in A matrix during calculation of w");
+      }
+      for (size_t j = 0; j < cols; ++j)
+      {
+        T aij = A_(i, j);
+        dense_E[i][j] = (i == j ? 1 : 0) - (aij / aii);
+      }
+    }
+    
+    DenseMatrix<T> E(dense_E, rows, cols);
+    
+    T mu = Estimate_max_eigenvalue(E);
+    
+    if (mu >= 1) { throw std::domain_error("Max eigenvalue mu must be less than 1 for valid computation of w"); }
+    
+    T denominator = 1 + std::sqrt(1 - mu * mu);
+    T w = 1 + std::pow(mu / denominator, 2);
+    
+    return w;
+}
+
 
   // creats the correct order of tau for Chebyshev_simple_iteration_method
   inline std::vector<size_t> get_tau_order(size_t number_of_iterations, std::vector<size_t> init_tau_arr = std::vector<size_t>{0}) const // я могу как то передавать по ссылке init_tau_arr?
@@ -221,7 +365,7 @@ private:
   const CSR_Matrix<T> A_;
   const std::vector<T> b_;
   const T stop_discrepancy_;  // when ( |Ax - b| < stop_discrepancy_ ) we stop computation
-  size_t max_iterations_ = 1000000;
+  size_t max_iterations_ = 10000;
 
   std::vector<T> x_;  // answer
 
