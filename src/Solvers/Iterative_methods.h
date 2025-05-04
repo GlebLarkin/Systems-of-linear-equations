@@ -6,6 +6,7 @@
 #include "./Matrixes/Tridiagonal_matrix.h"
 #include "./Operations/Some_matrix_operations.h"
 #include "./Operations/vector_operations.h"
+#include "Arnoldi.h"
 
 #include <limits>
 #include <stdexcept>
@@ -341,7 +342,65 @@ public:
     return x_;
   }
 
-  std::vector<T> GMRES(size_t m = 20);
+  std::vector<T> GMRES(T epsylon = 1e-10, size_t m)
+  {
+    // init 
+    auto y = x_;
+    auto x = x_;
+    auto r0 = A_ * y - b_;
+
+    std::vector<T> e1(m);
+    e1[0]=1;
+
+    T rho = VectorNorm(rho);
+
+    std::vector<std::vector<T>> basis(m, std::vector<T>(m));
+    basis[0] = r0;
+
+    UpperTriangularMatrix<T> R;
+
+    std::vector<GivensRotation<T>> rotation_vec(m);
+
+    ArnoldiStepMaker<T> solver(R, rotation_vec, basis);
+    // init end
+
+    for (size_t i = 0; i < m; ++i)
+    {
+      solver.Make_step(A_);
+
+      auto it = solver.Get_iteration();
+      auto rotations = solver.Get_rotation_vector();
+
+      rotations[it].rotate(e1);
+      if (abs(e1[it] * rho) <= epsylon) { break; }
+      if (i == m - 1) {std::cout << "restart GMRES with larger m, please"};
+    }
+
+    // SoLE
+    auto it = solver.Get_iteration();
+
+    y.resize(it);
+    auto R = solver.Get_R();
+    auto b_with_gamma = e1 * rho;
+
+    for (size_t i = it - 1; i >= 0; --i)
+    {
+      T sum = 0;
+      for (size_t j = i + 1; j < it; ++j) { sum += R(i, j) * y[j]; }
+
+      T diag = R(i, i);
+      if (diag == T(0)) { throw std::runtime_error("Zero diagonal element in R: i have paws"); }
+
+      y[i] = (b_with_gamma[i] - sum) / diag;
+    }
+
+    auto basis_vectors = solver.Get_basis();
+    for (size_t i = 0; i < it; ++i)
+    {
+      x_ = x_ - basis_vectors[i] * y[i];
+    }
+    return x;
+  }
 
   void ResetSolution() { x_.assign(x_.size(), 0); }
 

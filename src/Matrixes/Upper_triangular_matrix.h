@@ -8,6 +8,7 @@ template<class T>
 class UpperTriangularMatrix
 {
 public:
+  UpperTriangularMatrix() = default;
   UpperTriangularMatrix(const std::vector<T> & data, const size_t n)
     : data_(data), n_(n)
   {

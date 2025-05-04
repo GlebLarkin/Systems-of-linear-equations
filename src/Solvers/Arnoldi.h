@@ -87,7 +87,8 @@ public:
         R_.addCol(h);
         iteration_++;
     }
-
+    
+    size_t Get_iteration() const { return iteration_; }
     const UpperTriangularMatrix<T> & Get_R() const { return R_; }
     const std::vector<GivensRotation<T>> & Get_rotation_vector() const {return rotation_vec_; }
     const std::vector<std::vector<T>> & Get_basis() const { return basis_; }
