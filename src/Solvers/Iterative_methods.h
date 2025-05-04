@@ -15,6 +15,27 @@
 
 
 template <class T>
+struct ColMajorMatrix 
+{
+  std::vector<T> data_;
+  std::span<const T> col(size_t idx) const;
+  std::span<T> col(size_t idx);
+};
+
+template <class T>
+struct Arnoldi 
+{
+  using Rotation = pair<double, double>;
+  UpperTriangularMatrix R;
+  std::vector<Rotation> rotations;
+  ColMajorMatrix basis;
+
+  Arnoldi(const vector& r0, size_t m);
+  void calcColumn(const Matrix&m, size_t j);
+};
+
+
+template <class T>
 class IterativeMethodsSolver
 {
 public:
@@ -319,6 +340,8 @@ public:
 
     return x_;
   }
+
+  std::vector<T> GMRES(size_t m = 20);
 
   void ResetSolution() { x_.assign(x_.size(), 0); }
 
