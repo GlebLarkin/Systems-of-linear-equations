@@ -18,13 +18,10 @@ template <class T>
 class IterativeMethodsSolver
 {
 public:
-std::vector<size_t> Chebyshev_iteration;
-std::vector<T> Chebyshev_discrepancy;
-
   IterativeMethodsSolver(const CSR_Matrix<T> & A,  
                          const std::vector<T> & b, 
                          const T stop_discrepancy = std::numeric_limits<T>::epsilon() * 1e3) 
-    : A_(A), b_(b), stop_discrepancy_(stop_discrepancy), x_(std::vector<T>(b.size(), 0))
+    : A_(A), b_(b), stop_discrepancy_(stop_discrepancy), max_iterations_(1000), x_(std::vector<T>(b.size(), 0))
   {
     const auto [rows, cols] = A_.Get_matrix_size();
     if (rows != cols)
@@ -38,7 +35,7 @@ std::vector<T> Chebyshev_discrepancy;
     }
   }
   
-  std::vector<T> Jacoby_method()
+  std::vector<T> Jacoby_method(bool enough_1_iteration = false)
   {
     const auto [rows, cols] = A_.Get_matrix_size();
 
@@ -63,7 +60,7 @@ std::vector<T> Chebyshev_discrepancy;
 
     size_t iteration = 0;
 
-    while (!check_discrepancy() && iteration < max_iterations_) 
+    while (!check_discrepancy() && iteration < max_iterations_ && enough_1_iteration ? (iteration < 1) : 1) 
     {
       x_ = D_min1 * (b_ - (A_ * x_ - D_diag * x_)); 
       ++iteration;
@@ -72,7 +69,7 @@ std::vector<T> Chebyshev_discrepancy;
     return x_;
   }
 
-  std::vector<T> Gauss_Seidel_method()
+  std::vector<T> Gauss_Seidel_method(bool enough_1_iteration = false)
   {
     const auto [rows, cols] = A_.Get_matrix_size();
     for (size_t i = 0; i < rows; ++i)
@@ -82,7 +79,7 @@ std::vector<T> Chebyshev_discrepancy;
   
     size_t iteration = 0;
   
-    while (!check_discrepancy() && iteration < max_iterations_)
+    while (!check_discrepancy() && iteration < max_iterations_ && enough_1_iteration ? (iteration < 1) : 1)
     {
       for (size_t k = 0; k < rows; ++k)
       {
@@ -98,12 +95,12 @@ std::vector<T> Chebyshev_discrepancy;
     if (iteration >= max_iterations_) std::cout << "Iteration number limit had been reached, but the discrepancy is too big. Maybe the method is unstable.";
     return x_;
   }
-  
-  std::vector<T> Simple_iteration_method(T tau = 0.001)
+
+  std::vector<T> Simple_iteration_method(T tau = 0.001, bool enough_1_iteration = false)
   {
     size_t iteration = 0;
 
-    while (!check_discrepancy() && iteration < max_iterations_) 
+    while (!check_discrepancy() && iteration < max_iterations_ && enough_1_iteration ? (iteration < 1) : 1) 
     {
       x_ = x_ - (A_ * x_ - b_) * tau;
       ++iteration;
@@ -137,10 +134,6 @@ std::vector<T> Chebyshev_discrepancy;
     while(!check_discrepancy() && iteration < max_iterations_ && iteration < number_of_iterations)
     {
       x_ = x_ - (A_ * x_ - b_) * true_tau_arr[iteration];
-
-      Chebyshev_iteration.emplace_back(iteration);
-      Chebyshev_discrepancy.emplace_back(std::abs(VectorNorm(A_ * x_ - b_)));
-
       ++iteration;
     }
 
@@ -149,13 +142,13 @@ std::vector<T> Chebyshev_discrepancy;
     return x_;
   }
 
-  std::vector<T> Steepest_gradient_descent_method()
+  std::vector<T> Steepest_gradient_descent_method(bool enough_1_iteration = false)
   {
     size_t iteration = 0;
     std::vector<T> r(b_.size(), 0);
     T tau;
 
-    while (!check_discrepancy() && iteration < max_iterations_) 
+    while (!check_discrepancy() && iteration < max_iterations_ && enough_1_iteration ? (iteration < 1) : 1) 
     {
       r =  A_ * x_ - b_;
       tau = (VectorNorm(r)) / (r * (A_ * r));
@@ -167,7 +160,7 @@ std::vector<T> Chebyshev_discrepancy;
     return x_;
   }
 
-  std::vector<T> Successive_over_relaxation_method()
+  std::vector<T> Successive_over_relaxation_method(bool enough_1_iteration = false)
   {
     const auto [rows, cols] = A_.Get_matrix_size();
     for (size_t i = 0; i < rows; ++i)
@@ -182,7 +175,7 @@ std::vector<T> Chebyshev_discrepancy;
   
     size_t iteration = 0;
   
-    while (!check_discrepancy() && iteration < max_iterations_)
+    while (!check_discrepancy() && iteration < max_iterations_ && enough_1_iteration ? (iteration < 1) : 1)
     {
       for (size_t k = 0; k < rows; ++k)
       {
@@ -215,7 +208,7 @@ std::vector<T> Chebyshev_discrepancy;
     return x_;
   }
   
-  std::vector<T> Symmetric_Gauss_Seidel_method()
+  std::vector<T> Symmetric_Gauss_Seidel_method(bool enough_1_iteration = false)
   {
   const auto [rows, cols] = A_.Get_matrix_size();
   for (size_t i = 0; i < rows; ++i)
@@ -228,7 +221,7 @@ std::vector<T> Chebyshev_discrepancy;
 
   size_t iteration = 0;
 
-  while (!check_discrepancy() && iteration < max_iterations_)
+  while (!check_discrepancy() && iteration < max_iterations_ && enough_1_iteration ? (iteration < 1) : 1)
   {
     for (size_t k = 0; k < rows; ++k)
     {
@@ -261,6 +254,71 @@ std::vector<T> Chebyshev_discrepancy;
   return x_;
   }
 
+  std::vector<T> CG(bool enough_1_iteration = false)
+  {
+    size_t iteration = 0;
+    std::vector<T> r = A_ * x_ - b_;
+    std::vector<T> d = r;
+    std::vector<T> r_next(r.size());
+    T alpha, beta;
+
+    while (!check_discrepancy() && iteration < max_iterations_ && enough_1_iteration ? (iteration < 1) : 1)
+    {
+      std::vector<T> Ad = A_ * d;
+      T r_dot = r * r;
+      alpha = r_dot / (d * Ad);
+      x_ = x_ - d * alpha;
+      r_next = r - Ad * alpha;
+      beta = (r_next * r_next) / r_dot;
+      d = r_next + d * beta;
+
+      r = r_next;
+      ++iteration;
+    }
+
+    if (iteration >= max_iterations_)
+    {
+      std::cout << "Iteration number limit had been reached, but the discrepancy is too big. Maybe the method is unstable.";
+    }
+
+    return x_;
+}
+
+  std::vector<T> CGS(bool enough_1_iteration = false)
+  {
+    size_t iteration = 0;
+
+    std::vector<T> r0 = A_ * x_ - b_;
+    std::vector<T> r = r0;
+    std::vector<T> r_next(r0);
+    std::vector<T> u = r0;
+    std::vector<T> d = r0;
+    std::vector<T> q(b_.size(), T(0));
+
+    T alpha, beta;
+
+    while (!check_discrepancy() && iteration < max_iterations_ && enough_1_iteration ? (iteration < 1) : 1)
+    {
+      std::vector<T> Ad = A_ * d;
+      alpha = (r0 * r) / (r0 * Ad);
+      q = u - Ad * alpha;
+      x_ = x_ - (u + q) * alpha;
+      r_next = A_ * x_ - b_;
+      beta = (r0 * r_next) / (r0 * r);
+      u = r_next + q * beta;
+      d = u + (q + d * beta) * beta;
+
+      r = r_next;
+      ++iteration;
+    }
+
+    if (iteration >= max_iterations_)
+    {
+      std::cout << "Iteration number limit had been reached, but the discrepancy is too big. Maybe the method is unstable.";
+    }
+
+    return x_;
+  }
 
   void ResetSolution() { x_.assign(x_.size(), 0); }
 
@@ -292,14 +350,11 @@ private:
     
     T mu = Estimate_max_eigenvalue(E);
     
-    if (mu >= 1) { throw std::domain_error("Max eigenvalue mu must be less than 1 for valid computation of w"); }
-    
     T denominator = 1 + std::sqrt(1 - mu * mu);
     T w = 1 + std::pow(mu / denominator, 2);
     
     return w;
-}
-
+  }
 
   // creats the correct order of tau for Chebyshev_simple_iteration_method
   inline std::vector<size_t> get_tau_order(size_t number_of_iterations, std::vector<size_t> init_tau_arr = std::vector<size_t>{0}) const // я могу как то передавать по ссылке init_tau_arr?
@@ -319,7 +374,6 @@ private:
 
     return get_tau_order(number_of_iterations, tau_arr);
   }
-
   inline std::vector<T> find_Chebyshev_coefs(size_t number_of_iterations) const
   {
     T cos_1 = std::cos(std::numbers::pi_v<T> / number_of_iterations);
@@ -338,7 +392,6 @@ private:
 
     return ans;
   }
-  
   inline std::vector<T> create_true_tau_arr(T lambda_min, T lambda_max, size_t number_of_iterations) const
   {
     auto init_tau_arr = find_Chebyshev_coefs(number_of_iterations);
@@ -360,12 +413,10 @@ private:
     return true_tau_arr;
   }
   
-
-
   const CSR_Matrix<T> A_;
   const std::vector<T> b_;
   const T stop_discrepancy_;  // when ( |Ax - b| < stop_discrepancy_ ) we stop computation
-  size_t max_iterations_ = 10000;
+  const size_t max_iterations_;
 
   std::vector<T> x_;  // answer
 
