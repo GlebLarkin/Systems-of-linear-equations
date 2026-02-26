@@ -4,6 +4,7 @@
 
 #include "./Operations/vector_operations.h"
 #include "./Operations/Some_matrix_operations.h"
+#include "./Operations/Generate_elliptic_matrix.h"
 
 #include "./Solvers/Thomas_algorithm.h"
 #include "./Solvers/QR_decomposition.h"

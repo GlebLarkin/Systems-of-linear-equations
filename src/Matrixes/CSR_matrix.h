@@ -74,6 +74,32 @@ public:
 		return ans;
 	}
 
+	std::vector<T> Transpose_multiply(const std::vector<T> & vec) const
+	{
+		size_t y_size = sizes.first;
+		size_t x_size = sizes.second;
+
+		if (vec.size() != y_size)
+		{
+			throw std::invalid_argument("Size of vector and size of matrix do not match for transpose multiply");
+		}
+
+		std::vector<T> ans(x_size, 0);
+
+		for (size_t i = 0; i < y_size; ++i)
+		{
+			size_t row_start = rows[i];
+			size_t row_end = rows[i + 1];
+
+			for (size_t j = row_start; j < row_end; ++j)
+			{
+				ans[cols[j]] += values[j] * vec[i];
+			}
+		}
+
+		return ans;
+	}
+
 	std::pair<size_t, size_t> Get_matrix_size() const override { return sizes; }
 
 private:

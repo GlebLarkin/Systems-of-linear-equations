@@ -375,6 +375,159 @@ TEST(IterativeMethodsSolverTest, ChebyshevSimpleIterationMethod)
 }
 
 
+//=================Transpose multiply tests=================
+TEST(CSRMatrixTest, TransposeMultiply)
+{
+  std::map<std::pair<size_t, size_t>, double> dok_matrix =
+  {
+    {{0, 0}, 1.0},
+    {{0, 1}, 2.0},
+    {{1, 0}, 3.0},
+    {{1, 1}, 4.0},
+    {{2, 0}, 5.0},
+    {{2, 1}, 6.0}
+  };
+  CSR_Matrix<double> A(dok_matrix, 3, 2);
+
+  std::vector<double> vec = {1.0, 1.0, 1.0};
+  // A^T * vec = [1+3+5, 2+4+6] = [9, 12]
+  std::vector<double> expected = {9.0, 12.0};
+  std::vector<double> result = A.Transpose_multiply(vec);
+
+  ASSERT_EQ(result.size(), expected.size());
+  for (size_t i = 0; i < result.size(); ++i)
+  {
+    ASSERT_NEAR(result[i], expected[i], 1e-9);
+  }
+}
+
+
+//=================BiCG method tests=================
+TEST(IterativeMethodsSolverTest, BiCGMethodSymmetric)
+{
+  std::map<std::pair<size_t, size_t>, double> dok_matrix =
+  {
+    {{0, 0}, 6.0},
+    {{0, 1}, 2.0},
+    {{0, 2}, 1.0},
+    {{1, 0}, 2.0},
+    {{1, 1}, 5.0},
+    {{1, 2}, 1.0},
+    {{2, 0}, 1.0},
+    {{2, 1}, 1.0},
+    {{2, 2}, 4.0}
+  };
+  CSR_Matrix<double> A(dok_matrix, 3, 3);
+
+  std::vector<double> test_b = {9, 8, 6};
+  std::vector<double> expected_solution = {1, 1, 1};
+
+  IterativeMethodsSolver<double> solver(A, test_b);
+
+  std::vector<double> result = solver.BiCG();
+
+  for (size_t i = 0; i < result.size(); ++i)
+  {
+    EXPECT_NEAR(result[i], expected_solution[i], 1e-5);
+  }
+}
+
+TEST(IterativeMethodsSolverTest, BiCGMethodNonSymmetric)
+{
+  std::map<std::pair<size_t, size_t>, double> dok_matrix =
+  {
+    {{0, 0}, 6.0},
+    {{0, 1}, 5.0},
+    {{0, 2}, 1.0},
+    {{1, 0}, 2.0},
+    {{1, 1}, 5.0},
+    {{1, 2}, 1.0},
+    {{2, 0}, 6.0},
+    {{2, 1}, 1.0},
+    {{2, 2}, 4.0}
+  };
+  CSR_Matrix<double> A(dok_matrix, 3, 3);
+
+  std::vector<double> test_b = {12, 8, 11};
+  std::vector<double> expected_solution = {1, 1, 1};
+
+  IterativeMethodsSolver<double> solver(A, test_b);
+
+  std::vector<double> result = solver.BiCG();
+
+  for (size_t i = 0; i < result.size(); ++i)
+  {
+    EXPECT_NEAR(result[i], expected_solution[i], 1e-5);
+  }
+}
+
+
+//=================Chebyshev acceleration tests=================
+TEST(IterativeMethodsSolverTest, ChebyshevAccelerationWithSymmGS)
+{
+  std::map<std::pair<size_t, size_t>, double> dok_matrix =
+  {
+    {{0, 0}, 28.0},
+    {{0, 1}, 2.0},
+    {{1, 0}, 2.0},
+    {{1, 1}, 10.0},
+    {{2, 2}, 6.0}
+  };
+  CSR_Matrix<double> A(dok_matrix, 3, 3);
+
+  std::vector<double> test_b = {30, 12, 6};
+  std::vector<double> expected_solution = {1, 1, 1};
+
+  IterativeMethodsSolver<double> solver(A, test_b);
+
+  double rho = 1.0 / 70.0;
+
+  std::vector<double> result = solver.Chebyshev_acceleration(rho, [&solver]() {
+    solver.Symmetric_Gauss_Seidel_method(true);
+  });
+
+  for (size_t i = 0; i < result.size(); ++i)
+  {
+    EXPECT_NEAR(result[i], expected_solution[i], 1e-5);
+  }
+}
+
+
+//=================Elliptic matrix generator tests=================
+TEST(GenerateEllipticMatrixTest, Size2x2)
+{
+  auto A = Generate_elliptic_matrix<double>(2);
+  auto [rows, cols] = A.Get_matrix_size();
+
+  EXPECT_EQ(rows, 4);
+  EXPECT_EQ(cols, 4);
+
+  EXPECT_NEAR(A(0, 0), 4.0, 1e-9);
+  EXPECT_NEAR(A(0, 1), -1.0, 1e-9);
+  EXPECT_NEAR(A(0, 2), -1.0, 1e-9);
+  EXPECT_NEAR(A(0, 3), 0.0, 1e-9);
+  EXPECT_NEAR(A(1, 0), -1.0, 1e-9);
+  EXPECT_NEAR(A(1, 1), 4.0, 1e-9);
+}
+
+TEST(GenerateEllipticMatrixTest, DiagonalDominance)
+{
+  auto A = Generate_elliptic_matrix<double>(3);
+  auto [rows, cols] = A.Get_matrix_size();
+
+  for (size_t i = 0; i < rows; ++i)
+  {
+    double diag = std::abs(A(i, i));
+    double off_diag = 0;
+    for (size_t j = 0; j < cols; ++j)
+    {
+      if (i != j) off_diag += std::abs(A(i, j));
+    }
+    EXPECT_GE(diag, off_diag);
+  }
+}
+
+
 //=================Eigenvalues tests=================
 TEST(EstimateMaxEigenvalueTest, Symmetric3x3) {
   std::map<std::pair<size_t, size_t>, double> dok_matrix = {

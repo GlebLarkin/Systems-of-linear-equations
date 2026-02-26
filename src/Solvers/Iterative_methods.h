@@ -342,6 +342,76 @@ public:
     return x_;
   }
 
+  std::vector<T> BiCG(bool enough_1_iteration = false)
+  {
+    size_t iteration = 0;
+    std::vector<T> r = A_ * x_ - b_;
+    std::vector<T> r_c = r;
+    std::vector<T> r_next(r.size());
+    std::vector<T> r_c_next(r.size());
+    std::vector<T> d = r;
+    std::vector<T> d_c = r;
+    T alpha, beta;
+
+    while (!check_discrepancy() && iteration < max_iterations_ && enough_1_iteration ? (iteration < 1) : 1)
+    {
+      std::vector<T> Ad = A_ * d;
+      alpha = (r_c * r) / (d_c * Ad);
+      r_next = r - Ad * alpha;
+      r_c_next = r_c - A_.Transpose_multiply(d_c) * alpha;
+
+      x_ = x_ - d * alpha;
+
+      beta = (r_c_next * r_next) / (r_c * r);
+      d = r_next + d * beta;
+      d_c = r_c_next + d_c * beta;
+
+      r = r_next;
+      r_c = r_c_next;
+      ++iteration;
+    }
+
+    if (iteration >= max_iterations_)
+    {
+      std::cout << "Iteration number limit had been reached, but the discrepancy is too big. Maybe the method is unstable.";
+    }
+
+    return x_;
+  }
+
+  template <typename OneStepFunc>
+  std::vector<T> Chebyshev_acceleration(T rho, OneStepFunc one_step)
+  {
+    std::vector<T> y_prev = x_;
+    one_step();
+    std::vector<T> y_curr = x_;
+    T w = T(2) / (T(2) - rho * rho);
+
+    size_t iteration = 0;
+
+    while (!check_discrepancy() && iteration < max_iterations_)
+    {
+      x_ = y_curr;
+      one_step();
+      std::vector<T> method_result = x_;
+
+      x_ = y_prev + (method_result - y_prev) * w;
+
+      y_prev = y_curr;
+      y_curr = x_;
+
+      w = T(1) / (T(1) - rho * rho * w / T(4));
+      ++iteration;
+    }
+
+    if (iteration >= max_iterations_)
+    {
+      std::cout << "Iteration number limit had been reached, but the discrepancy is too big. Maybe the method is unstable.";
+    }
+
+    return x_;
+  }
+
   std::vector<T> GMRES(T epsylon = 1e-10, size_t m)
   {
     // init 
